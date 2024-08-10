@@ -1,0 +1,57 @@
+﻿@page "/products"
+@inject ILogger<Product> logger
+@inject IProductServices productServices
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRunTime
+
+<PageTitle>List - Products</PageTitle>
+<ModuleTitle title="List Products"></ModuleTitle>
+
+<button class="btn btn-danger" @onclick="@(()=> navigationManager.NavigateTo("/addProduct"))">Add Product</button>
+
+@if (listProducts?.Count > 0)
+{
+	<div class="product-container">
+		@foreach (var product in listProducts)
+		{
+			<div class="card">
+				<img src="@product.images[0]" class="card-img-top" />
+				<div class="card-body">
+					<h5>@product.title</h5>
+					<p>@product.price?.ToString("C")</p>
+					<button @onclick="@(()=> Delete(product))">Delete</button>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+@code {
+	private List<Product>? listProducts;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Get();
+	}
+
+	private async Task Get()
+	{
+		listProducts = await productServices.GetProducts();
+
+		foreach (var product in listProducts)
+		{
+			product.CleanAndFixImageUrls();
+		}
+	}
+
+	private async Task Delete(Product product)
+	{
+		if(!await jsRunTime.InvokeAsync<bool>("confirm", $"Estas seguro de eliminar el producto {product.title}"))
+		{
+			return;
+		}
+
+		await productServices.DeleteProduct(product.id);
+		await Get();
+	}
+}
