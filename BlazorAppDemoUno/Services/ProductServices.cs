@@ -42,7 +42,7 @@ namespace BlazorAppDemoUno
         // Actualizar productos
         public async Task PutProducts(Product product)
         {
-            var response = await _httpClient.PutAsync($"/api/v1/products/{product.id}", JsonContent.Create(product));
+            var response = await _httpClient.PutAsJsonAsync($"/api/v1/products/{product.id}", product);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode) throw new ApplicationException(content);
         }
