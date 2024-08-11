@@ -1,60 +1,113 @@
-﻿@page "/addProduct"
+﻿@page "/product/{id:int?}"
 @inject IProductServices productServices
 @inject ICategoryServices categoryServices
 @inject NavigationManager navigationManager
 
-<PageTitle>Add - Product</PageTitle>
-<ModuleTitle title="Add Product"></ModuleTitle>
+<PageTitle>@(isEditMode ? "Edit Product" : "Add Product")</PageTitle>
+<ModuleTitle title="@(isEditMode ? "Edit Product" : "Add Product")"></ModuleTitle>
 
-<button @onclick="@(()=> navigationManager.NavigateTo("/products"))">Products</button>
+<button @onclick="@(() => navigationManager.NavigateTo("/products"))">Products</button>
 
-<EditForm Model="@product" OnSubmit="@Save">
-	<div class="row">
-		<div>
-			<label>Title</label>
-			<InputText @bind-Value="product.title" requierd></InputText>
-		</div>
-		<div>
-			<label>Price</label>
-			<InputNumber @bind-Value="product.price"></InputNumber>
-		</div>
-	</div>
-	<div class="row">
-		<div class="form-group">
-			<label class="col-form-label">Image (URL)</label>
-			<InputTextArea @bind-Value="product.image" class="form-control"></InputTextArea>
-		</div>
-		<div class="form-group">
-			<label class="col-form-label">Category</label>
-			<InputSelect @bind-Value="product.categoryId" class="form-control">
-				<option>Select Category...</option>
-				@foreach(var category in categories)
-				{
-					<option value="@category.id">@category.name</option>
-				}
-			</InputSelect>
-		</div>
-	</div>
-	<div>
-		<label class="col-form-label">Description</label>
-		<InputTextArea @bind-Value="product.description" class="form-control"></InputTextArea>
-	</div>
-	<button type="submit">Save</button>
-</EditForm>
+@if (product != null && categories.Count > 0)
+{
+    <EditForm Model="product" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <InputText id="title" class="form-control" @bind-Value="product.title" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <InputNumber id="price" class="form-control" @bind-Value="product.price" min="0" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <InputTextArea id="description" class="form-control" @bind-Value="product.description" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="image" class="form-label">Image URL</label>
+            <InputText id="image" class="form-control" @bind-Value="product.image" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <InputSelect id="category" class="form-control" @bind-Value="product.categoryId" required>
+                <option>Select Category...</option>
+                @foreach (var category in categories)
+                {
+                    <option value="@category.id">@category.name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <button type="submit" class="btn btn-primary">@ButtonText</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+else
+{
+    <p><em>Loading...</em></p>
+}
 
 @code {
-	private Product product = new Product();
-	private List<Category> categories = new List<Category>();
+    [Parameter] public int? id { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		categories = await categoryServices.GetCategories();
-	}
+    private Product product = new Product();
+    private List<Category> categories = new List<Category>();
+    private bool isEditMode => id.HasValue && id > 0;
+    private string ButtonText => isEditMode ? "Update Product" : "Save Product";
 
-	public async Task Save()
-	{
-		product.images = new string[1] { product.image };
-		await productServices.PostProducts(product);
-		navigationManager.NavigateTo("/products");
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCategories();
+
+        if (isEditMode)
+        {
+            await GetProduct(id.Value);
+        }
+    }
+
+    private async Task GetCategories()
+    {
+        categories = await categoryServices.GetCategories() ?? new List<Category>();
+    }
+
+    private async Task GetProduct(int id)
+    {
+        product = await productServices.GetProducts(id) ?? new Product();
+        product.CleanAndFixImageUrls();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (product.IsValidImageUrl())
+        {
+            product.images = new string[1] { product.image };
+
+            if (isEditMode)
+            {
+                await productServices.PutProducts(product);
+            }
+            else
+            {
+                await productServices.PostProducts(product);
+            }
+
+            navigationManager.NavigateTo("/products");
+        }
+        else
+        {
+            Console.WriteLine("Invalid image URL");
+        }
+    }
+
+    private void Cancel()
+    {
+        navigationManager.NavigateTo("/products");
+    }
 }

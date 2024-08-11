@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 
 namespace BlazorAppDemoUno
 {
@@ -16,21 +17,38 @@ namespace BlazorAppDemoUno
         {
             for (int i = 0; i < images.Length; i++)
             {
+                string cleanImage = images[i].Trim('[', ']', '\"');
+
                 try
                 {
-                    var imageList = JsonSerializer.Deserialize<string[]>(images[i]);
-
-                    // Reemplazar el string original con la URL correcta
+                    // Intenta deserializar en caso de que sea un JSON con array
+                    var imageList = JsonSerializer.Deserialize<string[]>(cleanImage);
                     if (imageList != null && imageList.Length > 0)
                     {
-                        images[i] = imageList[0].Trim('\"');
+                        cleanImage = imageList[0].Trim('\"');
                     }
                 }
                 catch (JsonException)
                 {
-                    // En caso de que no sea un JSON válido, no hacer nada
+                    // Si no es un JSON válido, asumimos que cleanImage ya es una URL y no hacemos nada
                 }
+
+                // Actualiza el array images con la URL limpia
+                images[i] = cleanImage;
             }
+
+            // Actualiza image con la primera URL limpia de images si está disponible
+            if (images.Length > 0)
+            {
+                image = images[0];
+            }
+        }
+
+        public bool IsValidImageUrl()
+        {
+            // Verifica si la URL principal es válida
+            return Uri.TryCreate(image, UriKind.Absolute, out var uriResult)
+                   && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
     }
 }
