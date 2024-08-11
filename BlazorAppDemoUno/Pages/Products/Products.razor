@@ -7,7 +7,7 @@
 <PageTitle>List - Products</PageTitle>
 <ModuleTitle title="List Products"></ModuleTitle>
 
-<button class="btn btn-danger" @onclick="@(()=> navigationManager.NavigateTo("/addProduct"))">Add Product</button>
+<button class="btn btn-danger" @onclick="@(()=> navigationManager.NavigateTo("/product"))">Add Product</button>
 
 @if (listProducts?.Count > 0)
 {
@@ -58,6 +58,6 @@
 
 	private async Task Update(Product product)
 	{
-		navigationManager.NavigateTo($"/editProducts/{product.id}");
+		navigationManager.NavigateTo($"/product/{product.id}");
 	}
 }
