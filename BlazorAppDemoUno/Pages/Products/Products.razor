@@ -6,7 +6,7 @@
 <PageTitle>List - Products</PageTitle>
 <ModuleTitle title="List Products"></ModuleTitle>
 
-<button class="btn btn-danger" @onclick="@(()=> navigationManager.NavigateTo("/product"))">Add Product</button>
+<button @onclick="@(()=> navigationManager.NavigateTo("/product"))">Add Product</button>
 
 @if (listProducts?.Count > 0)
 {
@@ -14,8 +14,8 @@
 		@foreach (var product in listProducts)
 		{
 			<div class="card">
-				<img src="@product.images[0]" class="card-img-top" />
-				<div class="card-body">
+				<img src="@product.images[0]" />
+				<div>
 					<h5>@product.title</h5>
 					<p>@product.price?.ToString("C")</p>
 					<button @onclick="@(()=> Delete(product))">Delete</button>

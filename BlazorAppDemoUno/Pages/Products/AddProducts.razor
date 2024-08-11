@@ -11,29 +11,33 @@
 @if (product != null && categories.Count > 0)
 {
     <EditForm Model="product" OnValidSubmit="SelectActionButton">
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <InputText id="title" class="form-control" @bind-Value="product.title" required />
+        <div>
+            <span>
+                <label>Title</label>
+                <InputText @bind-Value="product.title" required />
+            </span>
+
+            <span>
+                <label>Price</label>
+                <InputNumber @bind-Value="product.price" min="0" required />
+            </span>
+        </div>
+
+        <div>
+            <span>
+                <label>Description</label>
+                <InputTextArea @bind-Value="product.description" required />
+            </span>
+
+            <span>
+                <label>Image URL</label>
+                <InputText @bind-Value="product.image" required />
+            </span>
         </div>
 
         <div class="mb-3">
-            <label for="price" class="form-label">Price</label>
-            <InputNumber id="price" class="form-control" @bind-Value="product.price" min="0" required />
-        </div>
-
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <InputTextArea id="description" class="form-control" @bind-Value="product.description" required />
-        </div>
-
-        <div class="mb-3">
-            <label for="image" class="form-label">Image URL</label>
-            <InputText id="image" class="form-control" @bind-Value="product.image" required />
-        </div>
-
-        <div class="mb-3">
-            <label for="category" class="form-label">Category</label>
-            <InputSelect id="category" class="form-control" @bind-Value="product.categoryId" required>
+            <label>Category</label>
+            <InputSelect @bind-Value="product.categoryId" required>
                 <option>Select Category...</option>
                 @foreach (var category in categories)
                 {
@@ -42,8 +46,8 @@
             </InputSelect>
         </div>
 
-        <button type="submit" class="btn btn-primary">@ButtonText</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        <button type="submit">@ButtonText</button>
+        <button type="button" @onclick="Cancel">Cancel</button>
     </EditForm>
 }
 else
