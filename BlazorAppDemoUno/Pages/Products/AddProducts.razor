@@ -11,9 +11,6 @@
 @if (product != null && categories.Count > 0)
 {
     <EditForm Model="product" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
             <InputText id="title" class="form-control" @bind-Value="product.title" required />
