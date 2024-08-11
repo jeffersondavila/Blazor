@@ -59,6 +59,7 @@ else
 
     private Product product = new Product();
     private List<Category> categories = new List<Category>();
+
     private bool isEditMode => id.HasValue && id > 0;
     private string ButtonText => isEditMode ? "Update Product" : "Save Product";
 
