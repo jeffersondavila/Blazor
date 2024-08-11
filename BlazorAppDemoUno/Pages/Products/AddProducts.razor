@@ -3,7 +3,7 @@
 @inject ICategoryServices categoryServices
 @inject NavigationManager navigationManager
 
-<PageTitle>@(isEditMode ? "Edit Product" : "Add Product")</PageTitle>
+<PageTitle>@(isEditMode ? "Edit - Product" : "Add - Product")</PageTitle>
 <ModuleTitle title="@(isEditMode ? "Edit Product" : "Add Product")"></ModuleTitle>
 
 <button @onclick="@(() => navigationManager.NavigateTo("/products"))">Products</button>
