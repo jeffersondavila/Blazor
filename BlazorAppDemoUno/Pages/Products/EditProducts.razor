@@ -1,0 +1,104 @@
+﻿@page "/editProducts/{id:int}"
+@inject IProductServices productServices
+@inject ICategoryServices categoryServices
+@inject NavigationManager navigationManager
+
+<PageTitle>Edit Product</PageTitle>
+<ModuleTitle title="Edit Product"></ModuleTitle>
+
+<button @onclick="@(() => navigationManager.NavigateTo("/products"))">Products</button>
+
+@if (product != null && categories.Count > 0)
+{
+    <EditForm Model="product" OnValidSubmit="EventoActualizar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <InputText id="title" class="form-control" @bind-Value="product.title" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <InputNumber id="price" class="form-control" @bind-Value="product.price" min="0" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <InputTextArea id="description" class="form-control" @bind-Value="product.description" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="image" class="form-label">Image URL</label>
+            <InputText id="image" class="form-control" @bind-Value="product.image" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <InputSelect id="category" class="form-control" @bind-Value="product.categoryId" required>
+                <option>Select Category...</option>
+                @foreach (var category in categories)
+                {
+                    <option value="@category.id">@category.name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Product</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+else
+{
+    <p><em>Loading...</em></p>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Product product = new Product();
+    private List<Category> categories = new List<Category>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCategories();
+        await GetProduct(id);
+    }
+
+    private async Task GetCategories()
+    {
+        categories = await categoryServices.GetCategories() ?? new List<Category>();
+    }
+
+    private async Task GetProduct(int id)
+    {
+        product = await productServices.GetProducts(id) ?? new Product();
+        if (product.images != null && product.images.Length > 0)
+        {
+            product.image = product.images[0].Trim('[', ']');
+            product.image = product.image.Trim('\"');
+        }
+    }
+
+    private async Task EventoActualizar()
+    {
+        // Validar la URL antes de enviar
+        if (Uri.TryCreate(product.image, UriKind.Absolute, out _))
+        {
+            product.images = new string[1] { product.image };
+            await productServices.PutProducts(product);
+            navigationManager.NavigateTo("/products");
+        }
+        else
+        {
+            // Manejar el caso en que la URL no es válida
+            Console.WriteLine("Invalid image URL");
+            // Puedes mostrar un mensaje de error al usuario aquí
+        }
+    }
+
+    private void Cancel()
+    {
+        navigationManager.NavigateTo("/products");
+    }
+}
